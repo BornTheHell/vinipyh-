@@ -1,2 +1,5 @@
 # vinipyh-
-simple vpn from ppython
+simple vpn from python
+
+зависимости
+sing-box
