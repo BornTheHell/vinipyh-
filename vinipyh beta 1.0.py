@@ -1,18 +1,3 @@
-# =============================================================================
-# VPN CLIENT  —  sing-box edition  v3.0
-# =============================================================================
-# pip install PyQt6
-#
-# Положите рядом:
-#   sing-box.exe  →  https://github.com/SagerNet/sing-box/releases
-#                    (sing-box-X.X.X-windows-amd64.zip → sing-box.exe)
-#
-# Компиляция через PyInstaller:
-#   pyinstaller --onefile --uac-admin --add-binary "sing-box.exe;." xray_vpn_client.py
-#
-# Запуск в dev-режиме: run_as_admin.bat
-# =============================================================================
-
 import sys, os, re, json, socket, sqlite3, queue, struct
 import subprocess, time, traceback, ctypes, base64, threading
 from urllib.parse import urlparse, parse_qs, unquote
@@ -31,9 +16,7 @@ from PyQt6.QtWidgets import (
     QAbstractItemView, QComboBox, QProgressBar, QDialog,
 )
 
-# =============================================================================
-# ПУТИ  (работает и в dev-режиме, и после PyInstaller --onefile)
-# =============================================================================
+
 def resource_path(name: str) -> str:
     """Путь к ресурсам, включённым в exe через --add-binary (sing-box.exe)."""
     base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
@@ -585,7 +568,7 @@ def build_config(srv: dict, mode: str,
                 {
                     "tag":              "dns-remote",
                     "address":          "tls://8.8.8.8",
-                    # address_resolver нужен для резолва «8.8.8.8» до поднятия TUN
+                    
                     "address_resolver": "dns-direct",
                     "detour":           "proxy",
                 },
@@ -596,7 +579,7 @@ def build_config(srv: dict, mode: str,
                 },
             ],
             "rules": [
-                # адрес VPN-сервера резолвим напрямую (иначе deadlock при старте TUN)
+                
                 {"domain": [srv["address"]], "server": "dns-direct"},
             ],
             "final":             "dns-remote",
@@ -615,7 +598,7 @@ def build_config(srv: dict, mode: str,
         # ── Routing ────────────────────────────────────────────────────────
         "route": {
             "rules": [
-                # sing-box 1.12+: action hijack-dns вместо dns-outbound
+                
                 {"protocol":"dns",         "action":"hijack-dns"},
                 {"ip_is_private":True,     "outbound":"direct"},
             ],
@@ -1130,7 +1113,7 @@ class VpnApp(QMainWindow):
     # ─── BUILD UI ─────────────────────────────────────────────────────────────
 
     def _build_ui(self):
-        self.setWindowTitle("VPN CLIENT  ·  sing-box  v3")
+        self.setWindowTitle("VINIPYX  ·  sing-box  v3")
         self.setMinimumSize(1120, 820); self.resize(1300, 920)
 
         root = QWidget(); self.setCentralWidget(root)
@@ -1138,7 +1121,7 @@ class VpnApp(QMainWindow):
 
         # Header
         hdr = QHBoxLayout()
-        tl = QLabel("⬡  VPN CLIENT  ·  sing-box"); tl.setObjectName("T")
+        tl = QLabel("⬡  VINIPYH   ·  sing-box"); tl.setObjectName("T")
         hdr.addWidget(tl); hdr.addStretch()
         self._ind = QLabel("● ОТКЛЮЧЕНО")
         self._ind.setStyleSheet("color:#f85149;font-size:13px;font-weight:bold;")
