@@ -1,18 +1,3 @@
-# =============================================================================
-# VPN CLIENT  —  sing-box edition  v3.0
-# =============================================================================
-# pip install PyQt6
-#
-# Положите рядом:
-#   sing-box.exe  →  https://github.com/SagerNet/sing-box/releases
-#                    (sing-box-X.X.X-windows-amd64.zip → sing-box.exe)
-#
-# Компиляция через PyInstaller:
-#   pyinstaller --onefile --uac-admin --add-binary "sing-box.exe;." xray_vpn_client.py
-#
-# Запуск в dev-режиме: run_as_admin.bat
-# =============================================================================
-
 import sys, os, re, json, socket, sqlite3, queue, struct
 import subprocess, time, traceback, ctypes, base64, threading
 from urllib.parse import urlparse, parse_qs, unquote
@@ -31,9 +16,7 @@ from PyQt6.QtWidgets import (
     QAbstractItemView, QComboBox, QProgressBar, QDialog,
 )
 
-# =============================================================================
-# ПУТИ  (работает и в dev-режиме, и после PyInstaller --onefile)
-# =============================================================================
+
 def resource_path(name: str) -> str:
     """Путь к ресурсам, включённым в exe через --add-binary (sing-box.exe)."""
     base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
@@ -47,9 +30,9 @@ def data_path(name: str) -> str:
         base = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, name)
 
-# =============================================================================
+
 # КОНСТАНТЫ
-# =============================================================================
+
 SOCKS_PORT       = 20808   # основной SOCKS5 (активное подключение)
 HTTP_PORT        = 20809   # основной HTTP прокси
 CHECK_SOCKS_BASE = 21000   # порты для массовой проверки (21000, 21002, 21004…)
@@ -63,9 +46,9 @@ SPEED_TEST_URL_HOST = "speed.cloudflare.com"
 SPEED_TEST_URL_PATH = "/__down?bytes=2000000"   # 2 MB
 SPEED_TEST_DURATION = 5                          # секунд замера
 
-# =============================================================================
+
 # ТЕМА
-# =============================================================================
+
 DARK = """
 QMainWindow,QWidget{background:#0d1117;color:#e6edf3;
   font-family:'Consolas','Courier New',monospace}
@@ -128,9 +111,9 @@ QScrollBar::add-line:horizontal,QScrollBar::sub-line:horizontal{height:0;width:0
 QFrame#D{background:#21262d;max-height:1px}
 """
 
-# =============================================================================
+
 # ADMIN
-# =============================================================================
+ 
 def is_admin() -> bool:
     try:    return bool(ctypes.windll.shell32.IsUserAnAdmin())
     except: return False
@@ -142,9 +125,8 @@ def relaunch_as_admin():
         None, "runas", sys.executable, f'"{script}" {args}', None, 1)
     sys.exit(0)
 
-# =============================================================================
 # БАЗА ДАННЫХ  (с миграцией для старых схем)
-# =============================================================================
+
 class DB:
     def __init__(self, path: str):
         self.path = path
@@ -262,9 +244,9 @@ class DB:
                 (address, port, uuid, password, folder_id)
             ).fetchone())
 
-# =============================================================================
+
 # ПАРСЕРЫ
-# =============================================================================
+
 def _empty_server() -> dict:
     return dict(protocol="vless", name="", uuid="", address="", port=443,
                 security="none", transport="tcp", flow="", sni="", pbk="",
@@ -417,9 +399,9 @@ def parse_any(raw: str) -> dict | None:
     if raw.startswith("hy2://"):       return parse_hysteria2(raw)
     return None
 
-# =============================================================================
+
 # КОНФИГ SING-BOX  (sing-box 1.10 – 1.14+)
-# =============================================================================
+
 def get_singbox_version(exe: str) -> tuple[int, int]:
     try:
         r = subprocess.run([exe, "version"], capture_output=True, text=True, timeout=5)
@@ -624,9 +606,9 @@ def build_config(srv: dict, mode: str,
         },
     }
 
-# =============================================================================
+
 # СЕТЕВЫЕ УТИЛИТЫ
-# =============================================================================
+
 def kill_proc(*names: str):
     """Принудительно убивает процессы по имени и ждёт их завершения."""
     for name in names:
@@ -767,9 +749,9 @@ def measure_speed_via_socks5(proxy_port: int) -> float:
     except: return 0.0
     finally: s.close()
 
-# =============================================================================
+
 # СИСТЕМНЫЙ ПРОКСИ WINDOWS
-# =============================================================================
+
 _REG = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
 
 def _preg():
@@ -814,9 +796,9 @@ def _pbcast():
             0xFFFF,0x001A,0,"Internet Settings",0x0002,200,ctypes.byref(res))
     except: pass
 
-# =============================================================================
+
 # ФОНОВЫЕ ПОТОКИ
-# =============================================================================
+
 class PingWorker(QThread):
     result = pyqtSignal(int, int)   # row, ms
 
@@ -978,9 +960,8 @@ class MassChecker(QThread):
         return result
 
 
-# =============================================================================
 # АВТО-ОБНОВЛЕНИЕ ПАПОК ИЗ URL
-# =============================================================================
+
 AUTO_UPDATE_URLS = {
     "SS+All RUS": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt",
     "VLESS RUS":  "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
@@ -1076,9 +1057,9 @@ class FolderUpdater(QThread):
             self.done.emit(self.folder_name, 0)
 
 
-# =============================================================================
+
 # ГЛАВНОЕ ОКНО
-# =============================================================================
+
 class VpnApp(QMainWindow):
 
     def __init__(self):
@@ -1809,18 +1790,18 @@ class VpnApp(QMainWindow):
         super().closeEvent(e)
 
 
-# =============================================================================
+
 # EXCEPTHOOK
-# =============================================================================
+
 def _hook(t, v, tb):
     s = "".join(traceback.format_exception(t,v,tb))
     app = QApplication.instance()
     if app: QMessageBox.critical(None,"Ошибка",f"Исключение:\n\n{s}")
     else:   print(s,file=sys.stderr)
 
-# =============================================================================
+
 # MAIN
-# =============================================================================
+
 def main():
     sys.excepthook = _hook
 
